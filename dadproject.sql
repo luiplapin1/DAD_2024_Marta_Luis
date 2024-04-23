@@ -25,12 +25,16 @@ CREATE TABLE IF NOT EXISTS `actuador` (
   `idActuador` int(11) NOT NULL,
   `timestamp` bigint(15) NOT NULL,
   `activo` tinyint(1) NOT NULL,
-  `encendido` tinyint(1) NOT NULL
+  `encendido` tinyint(1) NOT NULL,
+  `idGroup` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla dadproject.actuador: ~1 rows (aproximadamente)
-REPLACE INTO `actuador` (`nPlaca`, `idActuador`, `timestamp`, `activo`, `encendido`) VALUES
-	(1, 2, 15159615, 0, 1);
+-- Volcando datos para la tabla dadproject.actuador: ~4 rows (aproximadamente)
+REPLACE INTO `actuador` (`nPlaca`, `idActuador`, `timestamp`, `activo`, `encendido`, `idGroup`) VALUES
+	(1, 2, 15159615, 0, 1, 0),
+	(1, 3, 156165, 1, 1, 0),
+	(1, 0, 156165, 1, 1, 0),
+	(1, 9, 156165, 1, 1, 1);
 
 -- Volcando estructura para tabla dadproject.sensor
 CREATE TABLE IF NOT EXISTS `sensor` (
@@ -38,14 +42,18 @@ CREATE TABLE IF NOT EXISTS `sensor` (
   `nPlaca` int(11) NOT NULL,
   `humedad` float NOT NULL,
   `timestamp` bigint(20) NOT NULL,
-  `temperatura` float NOT NULL
+  `temperatura` float NOT NULL,
+  `idGroup` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Volcando datos para la tabla dadproject.sensor: ~1 rows (aproximadamente)
-REPLACE INTO `sensor` (`idSensor`, `nPlaca`, `humedad`, `timestamp`, `temperatura`) VALUES
-	(1, 0, 43.6, 165651615605, 25.35),
-	(1, 0, 43.6, 165651615605, 25.35),
-	(0, 0, 30.6, 51615605, 25.2);
+-- Volcando datos para la tabla dadproject.sensor: ~6 rows (aproximadamente)
+REPLACE INTO `sensor` (`idSensor`, `nPlaca`, `humedad`, `timestamp`, `temperatura`, `idGroup`) VALUES
+	(1, 0, 43.6, 165651615605, 25.35, 0),
+	(1, 0, 43.6, 165651615605, 25.35, 0),
+	(0, 0, 30.6, 51615605, 25.2, 1),
+	(25, 0, 30.6, 51615605, 25.2, 0),
+	(29, 0, 30.6, 51615605, 25.2, 0),
+	(9, 0, 30.6, 51615605, 25.2, 1);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
