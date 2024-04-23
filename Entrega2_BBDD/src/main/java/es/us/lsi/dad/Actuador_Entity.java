@@ -10,6 +10,7 @@ public class Actuador_Entity {
 	protected long timestamp;  //Calendar.getInstance().getTimeInMillis()
 	protected boolean activo;
 	protected boolean encendido;
+	protected int idGroup;
 	
 	public Actuador_Entity() {
 		super();	
@@ -17,13 +18,14 @@ public class Actuador_Entity {
 		activo=false;
 	}
 	
-	public Actuador_Entity(Integer nPlaca, Integer idActuador, long timestamp, boolean activo, boolean encendido) {
+	public Actuador_Entity(Integer nPlaca, Integer idActuador, long timestamp, boolean activo, boolean encendido, int idGroup) {
 		super();
 		this.nPlaca = nPlaca;
 		this.idActuador = idActuador;
 		this.timestamp = timestamp;
 		this.activo = activo;
 		this.encendido = encendido;
+		this.idGroup = idGroup;
 	}
 
 	public Integer getNPlaca() {
@@ -65,10 +67,18 @@ public class Actuador_Entity {
 	public void setEncendido(boolean encendido) {
 		this.encendido = encendido;
 	}
+	
+	public int getIdGroup() {
+		return idGroup;
+	}
+
+	public void setIdGroup(int idGroup) {
+		this.idGroup = idGroup;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(activo, encendido, nPlaca, idActuador, timestamp);
+		return Objects.hash(activo, encendido, idActuador, idGroup, nPlaca, timestamp);
 	}
 
 	@Override
@@ -80,16 +90,16 @@ public class Actuador_Entity {
 		if (getClass() != obj.getClass())
 			return false;
 		Actuador_Entity other = (Actuador_Entity) obj;
-		return activo == other.activo && encendido == other.encendido && Objects.equals(nPlaca, other.nPlaca)
-				&& Objects.equals(idActuador, other.idActuador) && timestamp == other.timestamp;
+		return activo == other.activo && encendido == other.encendido && Objects.equals(idActuador, other.idActuador)
+				&& idGroup == other.idGroup && Objects.equals(nPlaca, other.nPlaca) && timestamp == other.timestamp;
 	}
 
 	@Override
 	public String toString() {
 		return "Actuador_Entity [nPlaca=" + nPlaca + ", idActuador=" + idActuador + ", timestamp=" + timestamp
-				+ ", activo=" + activo + ", encendido=" + encendido + "]";
+				+ ", activo=" + activo + ", encendido=" + encendido + ", idGroup=" + idGroup + "]";
 	}
-	
+
 	
 	
 }

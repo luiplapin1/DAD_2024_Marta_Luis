@@ -11,14 +11,16 @@ public class Sensor_humedad_Entity {
 	protected long timestamp; //Calendar.getInstance().getTimeInMillis()
 	protected Float humedad;
 	protected Float temperatura;
+	protected int idGroup;
 
-	public Sensor_humedad_Entity(Integer idSensor, Integer nPlaca, long timestamp, Float humedad, Float temperatura) {
+	public Sensor_humedad_Entity(Integer idSensor, Integer nPlaca, long timestamp, Float humedad, Float temperatura, int idGroup) {
 		super();
 		this.idSensor = idSensor;
 		this.nPlaca=nPlaca;
 		this.timestamp = timestamp;
 		this.humedad = humedad;
 		this.temperatura = temperatura;
+		this.idGroup = idGroup;
 	}
 	
 	public Sensor_humedad_Entity() {
@@ -68,10 +70,17 @@ public class Sensor_humedad_Entity {
 		this.temperatura = temperatura;
 	}
 	
+	public int getIdGroup() {
+		return idGroup;
+	}
+	
+	public void setIdGroup(int idGroup) {
+		this.idGroup = idGroup;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(humedad, idSensor, nPlaca, temperatura, timestamp);
+		return Objects.hash(humedad, idGroup, idSensor, nPlaca, temperatura, timestamp);
 	}
 
 	@Override
@@ -83,16 +92,19 @@ public class Sensor_humedad_Entity {
 		if (getClass() != obj.getClass())
 			return false;
 		Sensor_humedad_Entity other = (Sensor_humedad_Entity) obj;
-		return Objects.equals(humedad, other.humedad) && Objects.equals(idSensor, other.idSensor)
-				&& Objects.equals(nPlaca, other.nPlaca) && Objects.equals(temperatura, other.temperatura)
-				&& timestamp == other.timestamp;
+		return Objects.equals(humedad, other.humedad) && idGroup == other.idGroup
+				&& Objects.equals(idSensor, other.idSensor) && Objects.equals(nPlaca, other.nPlaca)
+				&& Objects.equals(temperatura, other.temperatura) && timestamp == other.timestamp;
 	}
 
 	@Override
 	public String toString() {
-		return "Sensor_humedad_Entity [id=" + idSensor + ", nPlaca=" + nPlaca + ", timestamp=" + timestamp + ", humedad="
-				+ humedad + ", temperatura=" + temperatura + "]";
+		return "Sensor_humedad_Entity [idSensor=" + idSensor + ", nPlaca=" + nPlaca + ", timestamp=" + timestamp
+				+ ", humedad=" + humedad + ", temperatura=" + temperatura + ", idGroup=" + idGroup + "]";
 	}
+	
+
+	
 	
 	
 	
