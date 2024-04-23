@@ -174,7 +174,7 @@ public class RestServer extends AbstractVerticle {
 							if (res.succeeded()) {
 								// Si la inserción es exitosa, respondemos con el sensor creado
 								routingContext.response().setStatusCode(201).putHeader("content-type",
-										"application/json; charset=utf-8");
+										"application/json; charset=utf-8").end("Sensor añadido correctamente");
 							} else {
 								// Si hay un error en la inserción, respondemos con el mensaje de error
 								System.out.println("Error: " + res.cause().getLocalizedMessage());
@@ -334,7 +334,7 @@ public class RestServer extends AbstractVerticle {
 							if (res.succeeded()) {
 								// Si la inserción es exitosa, respondemos con el sensor creado
 								routingContext.response().setStatusCode(201).putHeader("content-type",
-										"application/json; charset=utf-8");
+										"application/json; charset=utf-8").end("Actuador añadido correctamente");
 							} else {
 								// Si hay un error en la inserción, respondemos con el mensaje de error
 								System.out.println("Error: " + res.cause().getLocalizedMessage());
