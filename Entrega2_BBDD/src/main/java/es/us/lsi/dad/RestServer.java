@@ -54,7 +54,7 @@ public class RestServer extends AbstractVerticle {
 		router.get("/api/sensor").handler(this::getAllSensorsWithConnection);
 		router.get("/api/sensor/all").handler(this::getAllSensors);
 		router.get("/api/sensor/:idSensor").handler(this::getSensorById);
-		router.get("/api/sensor/last").handler(this::getLastSensorId);
+		router.get("/api/sensor/:idSensor/last").handler(this::getLastSensorId);
 		router.post("/api/sensor").handler(this::addSensor);
 		router.delete("/api/sensor/:idSensor").handler(this::deleteSensor);
 		router.put("/api/sensor/:idSensor").handler(this::updateSensor);
@@ -63,6 +63,7 @@ public class RestServer extends AbstractVerticle {
 		router.get("/api/actuador").handler(this::getAllActuadoresWithConnection);
 		router.get("/api/actuador/all").handler(this::getAllActuadores);
 		router.get("/api/actuador/:idActuador").handler(this::getActuadorById);
+		router.get("/api/actuador/:idActuador/last").handler(this::getLastActuadorId);
 		router.post("/api/actuador").handler(this::addActuador);
 		router.delete("/api/actuador/:idActuador").handler(this::deleteActuador);
 		router.put("/api/actuador/:idActuador").handler(this::updateActuador);
@@ -166,46 +167,37 @@ public class RestServer extends AbstractVerticle {
 		});
 	}
 	
-	
-	//FUNCION ERRÓNEA
 	private void getLastSensorId(RoutingContext routingContext) {
+	    Integer idSensor = Integer.parseInt(routingContext.request().getParam("idSensor"));
 	    mySqlClient.getConnection(connection -> {
 	        if (connection.succeeded()) {
-	            connection.result().preparedQuery("SELECT * FROM sensor ORDER BY timestamp DESC LIMIT 1;", res -> {
-	                if (res.succeeded()) {
-	                    RowSet<Row> resultSet = res.result();
-	                    if (!resultSet.isEmpty()) {
-	                        Row lastRow = resultSet.iterator().next();
-	                        Sensor_humedad_Entity lastSensor = new Sensor_humedad_Entity(
-	                            lastRow.getInteger("idSensor"),
-	                            lastRow.getInteger("nPlaca"),
-	                            lastRow.getLong("timestamp"),
-	                            lastRow.getFloat("humedad"),
-	                            lastRow.getFloat("temperatura"),
-	                            lastRow.getInteger("idGroup")
-	                        );
-	                        routingContext.response()
-	                            .putHeader("content-type", "application/json; charset=utf-8")
-	                            .setStatusCode(200)
-	                            .end(lastSensor.toString());
-	                    } else {
-	                        routingContext.response()
-	                            .setStatusCode(404)
-	                            .end("No se encontraron registros de sensores.");
-	                    }
-	                } else {
-	                    System.out.println("Error: " + res.cause().getLocalizedMessage());
-	                    routingContext.response()
-	                        .setStatusCode(500)
-	                        .end("Error al obtener el último registro del sensor: " + res.cause().getMessage());
-	                }
-	                connection.result().close();
-	            });
+	            connection.result().preparedQuery("SELECT * FROM sensor WHERE idSensor = ? ORDER BY timestamp DESC LIMIT 1")
+	                    .execute(Tuple.of(idSensor), res -> {
+	                        if (res.succeeded()) {
+	                            // Get the result set
+	                            RowSet<Row> resultSet = res.result();
+	                            List<Sensor_humedad_Entity> result = new ArrayList<>();
+								for (Row elem : resultSet) {
+									result.add(new Sensor_humedad_Entity(elem.getInteger("idSensor"), elem.getInteger("nPlaca"), elem.getLong("timestamp"),
+											elem.getFloat("humedad"), elem.getFloat("temperatura"), elem.getInteger("idGroup")));
+								}
+				                routingContext.response()
+		                        .putHeader("content-type", "application/json; charset=utf-8")
+		                        .setStatusCode(200)
+		                        .end(gson.toJson(result));
+	                        } else {
+	                            System.out.println("Error: " + res.cause().getLocalizedMessage());
+	                            routingContext.response()
+	                                    .setStatusCode(404)
+	                                    .end("Error al obtener el sensor con idSensor " + idSensor + ": " + res.cause().getMessage());
+	                        }
+	                        connection.result().close();
+	                    });
 	        } else {
 	            System.out.println(connection.cause().toString());
 	            routingContext.response()
-	                .setStatusCode(500)
-	                .end("Error con la conexión a la base de datos: " + connection.cause().getMessage());
+	                    .setStatusCode(500)
+	                    .end("Error al conectar con la base de datos: " + connection.cause().getMessage());
 	        }
 	    });
 	}
@@ -381,6 +373,41 @@ public class RestServer extends AbstractVerticle {
 				routingContext.response().setStatusCode(500).end("Error con la coenxión: " + connection.cause().getMessage());
 			}
 		});
+	}
+	
+	private void getLastActuadorId(RoutingContext routingContext) {
+	    Integer idSensor = Integer.parseInt(routingContext.request().getParam("idActuador"));
+	    mySqlClient.getConnection(connection -> {
+	        if (connection.succeeded()) {
+	            connection.result().preparedQuery("SELECT * FROM actuador WHERE idActuador = ? ORDER BY timestamp DESC LIMIT 1")
+	                    .execute(Tuple.of(idSensor), res -> {
+	                        if (res.succeeded()) {
+	                            // Get the result set
+	                            RowSet<Row> resultSet = res.result();
+	                            List<Actuador_Entity> result = new ArrayList<>();
+								for (Row elem : resultSet) {
+									result.add(new Actuador_Entity(elem.getInteger("nPlaca"),elem.getInteger("idActuador"), elem.getLong("timestamp"),
+											elem.getBoolean("activo"), elem.getBoolean("encendido"), elem.getInteger("idGroup")));
+								}
+				                routingContext.response()
+		                        .putHeader("content-type", "application/json; charset=utf-8")
+		                        .setStatusCode(200)
+		                        .end(gson.toJson(result));
+	                        } else {
+	                            System.out.println("Error: " + res.cause().getLocalizedMessage());
+	                            routingContext.response()
+	                                    .setStatusCode(404)
+	                                    .end("Error al obtener el actuador con idActuador " + idSensor + ": " + res.cause().getMessage());
+	                        }
+	                        connection.result().close();
+	                    });
+	        } else {
+	            System.out.println(connection.cause().toString());
+	            routingContext.response()
+	                    .setStatusCode(500)
+	                    .end("Error al conectar con la base de datos: " + connection.cause().getMessage());
+	        }
+	    });
 	}
 
 	private void addActuador(RoutingContext routingContext) {
