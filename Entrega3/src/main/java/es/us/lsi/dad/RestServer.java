@@ -249,28 +249,38 @@ public class RestServer extends AbstractVerticle {
 	
 	private void addSensor(RoutingContext routingContext) {
 
-		// Parseamos el cuerpo de la solicitud HTTP a un objeto Sensor_humedad_Entity
-		final Sensor_humedad_Entity sensor = gson.fromJson(routingContext.getBodyAsString(),
-				Sensor_humedad_Entity.class);
+	    // Parseamos el cuerpo de la solicitud HTTP a un objeto Sensor_humedad_Entity
+	    final Sensor_humedad_Entity sensor = gson.fromJson(routingContext.getBodyAsString(),
+	            Sensor_humedad_Entity.class);
 
-		// Ejecutamos la inserción en la base de datos MySQL
-		mySqlClient
-				.preparedQuery(
-						"INSERT INTO sensor (idSensor, nPlaca, humedad, timestamp, temperatura, idGroup) VALUES (?, ?, ?, ?, ?, ?)")
-				.execute((Tuple.of(sensor.getId(), sensor.getnPlaca(), sensor.getHumedad(), sensor.getTimestamp(),
-						sensor.getTemperatura(), sensor.getIdGroup())), res -> {
-							if (res.succeeded()) {
-								// Si la inserción es exitosa, respondemos con el sensor creado
-								routingContext.response().setStatusCode(201).putHeader("content-type",
-										"application/json; charset=utf-8").end("Sensor añadido correctamente");
-							} else {
-								// Si hay un error en la inserción, respondemos con el mensaje de error
-								System.out.println("Error: " + res.cause().getLocalizedMessage());
-								routingContext.response().setStatusCode(500).end("Error al añadir el sensor: " + res.cause().getMessage());
-							}
-						});
-		mqttClient.publish("sensor", Buffer.buffer(sensor.toString()), MqttQoS.AT_LEAST_ONCE, false, false);
+	    // Ejecutamos la inserción en la base de datos MySQL
+	    mySqlClient
+	            .preparedQuery(
+	                    "INSERT INTO sensor (idSensor, nPlaca, humedad, timestamp, temperatura, idGroup) VALUES (?, ?, ?, ?, ?, ?)")
+	            .execute((Tuple.of(sensor.getId(), sensor.getnPlaca(), sensor.getHumedad(), sensor.getTimestamp(),
+	                    sensor.getTemperatura(), sensor.getIdGroup())), res -> {
+	                        if (res.succeeded()) {
+	                            // Si la inserción es exitosa, respondemos con el sensor creado
+	                            routingContext.response().setStatusCode(201).putHeader("content-type",
+	                                    "application/json; charset=utf-8").end("Sensor añadido correctamente");
+
+	                            // Publicar en MQTT después de la inserción exitosa
+	                            if (sensor.getTemperatura() > 30) {
+	                                mqttClient.publish(sensor.getIdGroup() + "",
+	                                        Buffer.buffer("ON"), MqttQoS.AT_LEAST_ONCE, false, false);
+	                            } else {
+	                                mqttClient.publish(sensor.getIdGroup() + "",
+	                                        Buffer.buffer("OFF"), MqttQoS.AT_LEAST_ONCE, false, false);
+	                            }
+	                        } else {
+	                            // Si hay un error en la inserción, respondemos con el mensaje de error
+	                            System.out.println("Error: " + res.cause().getLocalizedMessage());
+	                            routingContext.response().setStatusCode(500).end("Error al añadir el sensor: " + res.cause().getMessage());
+	                        }
+	                    });
+
 	}
+
 
 	private void deleteSensor(RoutingContext routingContext) {
 		mySqlClient.getConnection(connection -> {
@@ -510,6 +520,7 @@ public class RestServer extends AbstractVerticle {
 								routingContext.response().setStatusCode(500).end("Error al añadir el actuador: " + res.cause().getMessage());
 							}
 						});
+		
 	}
 
 	private void deleteActuador(RoutingContext routingContext) {
