@@ -9,6 +9,8 @@
 #include <ESP32Servo.h>
 
 Servo myservo;
+String previousContent = "";  // Variable global para almacenar el estado anterior del contenido del topic de MQTT
+
 
 HTTPClient http;
 
@@ -27,8 +29,8 @@ int cont=0;
 String serverName = "http://192.168.0.33:8084";
 
 // Replace WifiName and WifiPassword by your WiFi credentials
-#define STASSID "Pla_P_4F00"    //"Your_Wifi_SSID"
-#define STAPSK "JDZXQDNJ2MXQDR " //"Your_Wifi_PASSWORD"
+#define STASSID "WIFI_SSID"    //"Your_Wifi_SSID"
+#define STAPSK "WIFI_PASS" //"Your_Wifi_PASSWORD"
 #define DHTPIN 15 // pin de placa del sensor de humedad y temperatura
 #define ACTUADOR_PIN 16 // pin de placa del actuador
 #define TEMPERATURE_THRESHOLD 30
@@ -47,39 +49,63 @@ const uint16_t MQTT_PORT = 1883;
 // Name for this MQTT client
 const char *MQTT_CLIENT_NAME = "Client_5";
 
-void OnMqttReceived(char *topic, byte *payload, unsigned int length)
-{
+String mensaje="";
+boolean change=false;
+void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Received on ");
   Serial.print(topic);
   Serial.print(": ");
 
   String content = "";
-  for (size_t i = 0; i < length; i++)
-  {
+  for (size_t i = 0; i < length; i++) {
     content.concat((char)payload[i]);
   }
   Serial.print(content);
   Serial.println();
 
+  // Verificamos si el contenido ha cambiado
+  if (content != previousContent) {
+    if (content == "ON") {
+      myservo.write(0);
+      delay(160);
+      myservo.write(90);
+      delay(5000);
+    } else if (content == "OFF") {
+      myservo.write(180);
+      delay(150);
+      myservo.write(90);
+      delay(5000);
+    }
+    // Actualizamos el estado anterior
+    previousContent = content;
+  }
 }
+
+  
+
 
 // inicia la comunicacion MQTT
 // inicia establece el servidor y el callback al recibir un mensaje
 void InitMqtt()
 {
   client.setServer(MQTT_BROKER_ADRESS, MQTT_PORT);
-  client.setCallback(OnMqttReceived);
+  client.setCallback(callback);
 }
 
 
 // Setup
 void setup()
 {
+
   Serial.begin(9600);
   Serial.println();
+    // pinMode(ACTUADOR_PIN, OUTPUT);
+  myservo.attach(ACTUADOR_PIN);
+  myservo.write(90);
+  delay(1000);
   Serial.print("Connecting to ");
   Serial.println(STASSID);
-  // pinMode(ACTUADOR_PIN, OUTPUT);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(STASSID, STAPSK);
 
@@ -96,6 +122,8 @@ void setup()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println("Setup!");
+
+
 
 
 dht.begin();
@@ -457,24 +485,6 @@ void POST_tests()
 
 // La función de callback que se ejecutará cuando recibamos un mensaje desde el servidor MQTT
 
-String mensaje="";
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Received on ");
-  Serial.print(topic);
-  Serial.print(": ");
-
-  String content = "";
-  for (size_t i = 0; i < length; i++)
-  {
-    content.concat((char)payload[i]);
-  }
-  Serial.print(content);
-  Serial.println();
-  if (content == "OFF" || content == "ON"){
-  mensaje = content;
-
-  }
-}
 
 
 void HandleMqtt()
@@ -487,12 +497,12 @@ void HandleMqtt()
 }
 
 
-// Variables para controlar el tiempo transcurrido
-// Run the tests!
 
 
 void loop() {
-if (cont == 300000) {
+
+
+if (cont == 1000) {
     cont = 0;
     sensors_event_t event;
     dht.temperature().getEvent(&event);
@@ -506,18 +516,8 @@ if (cont == 300000) {
       Serial.print(temp);
       Serial.println(F("°C"));
       POST_tests();
-      // Verificar si la temperatura supera el umbral predefinido
-      if (!myservo.attached()) {
-        myservo.setPeriodHertz(50); // standard 50 hz servo
-        myservo.attach(33, 1000, 2000); // Attach the servo after it has been detatched
-      }
-      if (mensaje == "ON") {
-        // MOvimiento del servo
-        myservo.write(45);
-      } else if (mensaje == "OFF") {
-        // Movimiento del servo
-        myservo.write(0);
-      }
+
+
     }
 }
 else{
