@@ -8,3 +8,5 @@ Repositorio que contiene los proyectos de DAD de laboratorio del curso 2024 de M
 - Entregable 2: Carpeta Entrega2
 - Entregable 3: Carpeta Entrega2_BBDD
 - Entregables 4 y 5 (proyecto final): Carpeta Entrega3 + Carpeta DADESPWS
+
+*En la tarea de EV se encuentran la demostración del proyecto funcionando y lamemoria del  mismo.
